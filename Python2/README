@@ -1,0 +1,8 @@
+Dockerfile to create a PyQt4 environment with Python2
+
+
+Protocol to launch the Docker in your machine
+
+docker build -t qt4 .
+xhost + 		# If xserver not working
+docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix qt4
