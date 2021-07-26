@@ -1,7 +1,25 @@
 # Docker Python2
 
-Dockerfile to create a Python2 with OpenAlea, Vplants and Alinea.
+Dockerfile to create a Python2 with OpenAlea, Vplants and Alinea working with Ubuntu 14.04.
+
+It installs a minimualistic Unbuntu 14.04 and : 
+- Python=2.7
+- python-matplotlib
+- software-properties-common 
+- xserver-xorg-input-all
+- python-qt4
+- python-opencv
+- subversion
+- git
+
+And OpenAlea packages from apt repositories : 
+- openalea
+- vplants
+- alinea
+
 Type ```visualea``` in the container to launch it.
+
+
 
 ## Protocol to launch the Docker in your machine :
 
