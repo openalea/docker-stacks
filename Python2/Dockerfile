@@ -9,6 +9,7 @@ SHELL ["/bin/bash", "--login", "-c"]
 # Installation of necessary packages
 RUN apt-get update
 RUN apt-get install -y \
+    gnuplot-x11 \ 
     python-matplotlib \
     software-properties-common \
     xserver-xorg-input-all \
