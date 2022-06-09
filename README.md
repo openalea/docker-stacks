@@ -18,8 +18,23 @@ Additionally, there is no need to open the ports since it just open an app.
 
 ```
 pip install docker
-docker pull wilga/openalea_python2
-docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix openalea/python2
+docker pull openalea/python2
+docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --volume=$PWD:/home/User001:rw openalea/python2
+```
+
+For Mac users, preliminary steps are necessary (cf. )
+
+```
+# retrive IP address from host OS
+ipAdress=`ifconfig | grep inet | grep broadcast | awk '{print $2}' | tail -1`
+
+# deal with the socat
+socat TCP-LISTEN:6000,reuseaddr,fork UNIX-CLIENT:\"$DISPLAY\" &
+
+docker run -it --rm --env="DISPLAY=${ipAdress}:0" --volume=$PWD:/home/User001:rw openalea/python2:latest
+
+# Kill socat
+lsof -n -i | grep 6000 | grep IPv6 | awk '{print $2}' | xargs kill -9
 ```
 
 As for Strawberry image : 
