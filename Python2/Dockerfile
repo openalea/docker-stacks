@@ -1,4 +1,5 @@
-# Ubuntu 14.04 (Trusty)
+## Building command:
+## docker build --pull --rm -f "Dockerfile" -t openalea/python2:latest "."
 
 FROM ubuntu:14.04
 
@@ -8,8 +9,8 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 # Installation of necessary packages
 RUN apt-get update
-RUN apt-get install -y \
-    gnuplot-x11 \ 
+RUN apt-get install --no-install-recommends -y \
+    gnuplot-x11 \
     python-matplotlib \
     software-properties-common \
     xserver-xorg-input-all \
@@ -18,7 +19,8 @@ RUN apt-get install -y \
     subversion \
     git
 RUN apt-get -y autoclean \
-    && apt-get -y autoremove
+    && apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 # Installation of OpenAlea packages
 RUN add-apt-repository ppa:christophe-pradal/openalea \
@@ -34,10 +36,3 @@ USER User001
 RUN alea_config
 WORKDIR /home/User001
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python2.7/dist-packages/lib/
-
-
-#### Protocol to launch the Docker in you machine ####
-
-# docker build -t openalea .
-# xhost +
-# docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix openalea
