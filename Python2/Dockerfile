@@ -36,3 +36,4 @@ RUN useradd -rm -d /home/User001 -s /bin/bash -g root -G sudo -u 1000 User001
 USER User001
 WORKDIR /home/User001
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python2.7/dist-packages/lib/
+ENV PATH=$PATH:/usr/lib/python2.7/dist-packages/bin/
