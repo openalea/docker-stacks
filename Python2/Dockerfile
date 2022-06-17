@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "--login", "-c"]
 
 # Installation of necessary packages
 RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get install --no-install-recommends -y \
     gnuplot-x11 \ 
     python-matplotlib \
     software-properties-common \
@@ -18,7 +18,8 @@ RUN apt-get install -y \
     subversion \
     git
 RUN apt-get -y autoclean \
-    && apt-get -y autoremove
+    && apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 # Installation of OpenAlea packages
 RUN add-apt-repository ppa:christophe-pradal/openalea \
@@ -27,11 +28,11 @@ RUN add-apt-repository ppa:christophe-pradal/openalea \
 
 RUN apt-get update && apt-get install -y python-openalea python-vplants python-alinea
 
+RUN alea_config
 
 # Define a "User001" user who doesn't have root permission.
 RUN useradd -rm -d /home/User001 -s /bin/bash -g root -G sudo -u 1000 User001
 USER User001
-RUN alea_config
 WORKDIR /home/User001
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python2.7/dist-packages/lib/
 
