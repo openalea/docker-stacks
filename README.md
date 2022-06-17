@@ -22,7 +22,7 @@ docker pull openalea/python2
 docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --volume=$PWD:/home/User001:rw openalea/python2
 ```
 
-For Mac users, preliminary steps are necessary (cf. )
+For Mac users, preliminary steps are necessary (cf. https://cntnr.io/running-guis-with-docker-on-mac-os-x-a14df6a76efc)
 
 ```
 # retrive IP address from host OS

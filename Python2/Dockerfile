@@ -1,4 +1,5 @@
-# Ubuntu 14.04 (Trusty)
+## Building command:
+## docker build --pull --rm -f "Dockerfile" -t openalea/python2:latest "."
 
 FROM ubuntu:14.04
 
@@ -35,10 +36,3 @@ RUN useradd -rm -d /home/User001 -s /bin/bash -g root -G sudo -u 1000 User001
 USER User001
 WORKDIR /home/User001
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/python2.7/dist-packages/lib/
-
-
-#### Protocol to launch the Docker in you machine ####
-
-# docker build -t openalea .
-# xhost +
-# docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix openalea
