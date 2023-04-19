@@ -1,0 +1,242 @@
+# Dockerfile for use with vplants
+
+
+#Download base image ubuntu 16.04
+FROM ubuntu:16.04
+LABEL maintainer="Jean-Baptiste Durand <jean-baptiste.durand@inria.fr>"
+LABEL version="1.0"
+LABEL vcs-url="https://gricad-gitlab.univ-grenoble-alpes.fr/durandje/vplants.bak.git"
+LABEL vcs-ref="6654a6859651640f9b0e4a12d2efa28683e2313e"
+LABEL docker.build.cmd="docker build -f Docker-Singularity/vplants_Dockerfile -t vplants/vplants:1.0  ."
+LABEL docker.cmd="docker run --rm -it -p 8888:8888 vplants/vplants:1.0"
+LABEL docker.cmd.variant="docker run -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/my_host_home_dir/.Xauthority -v my_library_path:/mnt/path:rw --user my_id --rm -it --net=host vplants/vplants:1.0"
+LABEL usage="jupyter notebook --ip 0.0.0.0 --no-browser"
+# usual other labels
+# docker.cmd: How to run a container based on the image under the Docker runtime.
+# docker.cmd.test: How to run the bundled test-suite for the image under the Docker runtime.
+# docker.params
+
+# Find your id with "id -u jbdurand"
+
+# Environment variables
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+
+# Update the image & install some tools
+RUN apt update && apt install -y gedit && \
+    apt install -y git
+
+# Set arguments
+ARG user=durand
+ARG home=/home/durand/
+ARG devlp=/home/durand/devlp/
+# Create the user and its directory
+RUN mkdir -p $home &&\
+    mkdir -p /mnt/devlp &&\
+    useradd $user --home-dir $home && \
+    chown -R $user: $home && \
+    mkdir -p $devlp && \
+    cd $devlp
+
+COPY --chown=durand ./openalea-stable/ /home/durand/devlp/openalea-stable/
+# NB: COPY --chown=durand em-analysis $devlp would not preserve subdirectories
+# since the destination would be incomplete
+COPY --chown=durand ./vplants-stable-with-aml/  /home/durand/devlp/vplants-stable-with-aml/
+    
+# Install packages for openalea / vplants compilation
+RUN apt install -y freeglut3
+RUN apt install -y freeglut3-dev
+RUN apt install -y libboost-python1.58.0 libboost1.58-dev libboost-python1.58-dev
+#RUN apt install libboost1.58-tools-dev
+RUN apt install -y libqt4-dev libqt4-dev-bin
+RUN apt install -y libreadline6 libreadline6-dev
+RUN apt install -y pkg-config
+RUN apt install -y pyqt4-dev-tools
+RUN apt install -y python-matplotlib
+RUN apt install -y python-qt4 python-qt4-dev
+RUN apt install -y python-setuptools 
+RUN apt install -y scons 
+
+RUN apt install -y python-pip 
+# Install packages required at execution
+
+# Solve issue ImportError: cannot import name 'main'
+# in pip 
+
+RUN hash pip
+
+RUN python2 -m pip install --upgrade pip==19.3.1 
+
+RUN python2 -m pip install numpy==1.13.3
+RUN python2 -m pip install pandas==0.23.4
+RUN python2 -m pip install matplotlib==2.0.2
+
+RUN python2 -m pip install jupyter notebook jupyter_core
+RUN python2 -m pip install ipykernel
+RUN python2 -m ipykernel install --user
+RUN python2 -m pip install pytest
+RUN python2 -m pip install graphviz
+RUN python2 -m pip install seaborn
+RUN python2 -m pip install pathlib
+RUN python2 -m pip install dill
+
+RUN apt install -y graphviz
+
+RUN apt install -y libann0 libann-dev
+RUN apt install -y libcgal-dev
+# Lapack
+RUN apt install -y libatlas3-base
+RUN apt install -y flex-old
+RUN apt install -y libqhull7 libqhull-dev
+RUN apt install -y libblas3
+RUN apt install -y libmpc-dev libgmp-dev
+RUN apt install -y libmpc3
+RUN apt install -y liblapack-dev
+RUN apt install -y libeigen3-dev
+RUN apt install -y python-networkx
+
+RUN apt-get install -y wget
+RUN apt-get install -y m4
+
+# development tools
+RUN apt install -y ddd
+RUN apt install -y electric-fence
+
+# Downgrade bison
+RUN cd /root
+RUN wget http://launchpadlibrarian.net/140087283/libbison-dev_2.7.1.dfsg-1_amd64.deb
+RUN wget http://launchpadlibrarian.net/140087282/bison_2.7.1.dfsg-1_amd64.deb
+RUN dpkg -i libbison-dev_2.7.1.dfsg-1_amd64.deb
+RUN dpkg -i bison_2.7.1.dfsg-1_amd64.deb
+
+# Compile openalea packages
+RUN cd /home/durand/devlp/openalea-stable/openalea/ && \
+    python multisetup.py install && \
+    alea_config
+
+# Compile vplants packages
+RUN cd /home/durand/devlp/vplants-stable-with-aml/tool && \
+    python setup.py install && \
+    alea_config && \
+    cd ../PlantGL  && \
+    python setup.py install && \
+    alea_config && \
+    cd ../stat_tool  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../sequence_analysis  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../amlobj  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../mtg  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../tree  && \
+    python setup.py install  && \
+    alea_config && \ 
+    cd ../tree_matching  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../aml  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../tree_statistic  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../aml2py  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../newmtg  && \
+    python setup.py install  && \
+    alea_config && \
+    cd ../gnuplot-py-1.8/ && \
+    python setup.py install && \
+    alea_config
+
+
+# Gnuplot installation
+RUN apt install -y gnuplot 
+RUN apt install -y gnuplot-x11
+RUN apt install -y gnuplot-tex 
+RUN apt install -y python-gnuplot
+    
+ENV R_VERSION="3.4.4-1xenial0"
+# R repository mirror to install extra packages
+ENV R_REPOS="https://stat.ethz.ch"
+
+# Install R dependencies
+RUN apt update
+RUN apt install -y software-properties-common apt-transport-https
+RUN apt update
+RUN add-apt-repository "deb $R_REPOS/CRAN/bin/linux/ubuntu xenial/"
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
+RUN apt update
+RUN apt install -y r-base=$R_VERSION
+
+ENV R_CONTRIBS="https://cloud.r-project.org" 
+ENV TAR="/bin/tar" 
+
+RUN mkdir /root/r_analysis && \
+    cd /root/r_analysis && \
+    echo 'install.packages("lme4", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
+    echo 'install.packages("nlme", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
+    echo 'install.packages("MCMCglmm", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
+    Rscript r_install.txt
+
+
+# Presumably the last rpy2 version working with python2.7
+RUN python2 -m pip install rpy2==2.8.6
+
+RUN rm -Rf /root/r_analysis
+
+
+# Links to binaries
+RUN ln -s /usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/bin/aml /usr/local/bin/aml
+
+RUN ln -s /usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/bin/pglviewer /usr/local/bin/pglviewer
+
+RUN find /usr/local/lib/python2.7/dist-packages/ -path "*OpenAlea*" -type f -exec chmod o+r "{}" \;
+RUN find /usr/local/lib/python2.7/dist-packages/ -path "*VPlants*" -type f -exec chmod o+r "{}" \;
+
+RUN apt install -y python-nose
+
+RUN apt install -y debconf-utils
+
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN echo "keyboard-configuration  keyboard-configuration/variant  select  French" | debconf-set-selections
+RUN echo "keyboard-configuration  keyboard-configuration/layout   select  French" | debconf-set-selections
+
+# Or for example
+# RUN echo "keyboard-configuration  keyboard-configuration/variant  select  English (US)" | debconf-set-selections
+# RUN echo "keyboard-configuration  keyboard-configuration/layout   select  English (US)" | debconf-set-selections
+
+# Install nvidia drivers for PlantGL
+RUN apt install -y nvidia-opencl-icd-384
+RUN apt install -y nvidia-settings 
+RUN apt install -y nvidia-prime
+RUN apt install -y nvidia-384
+RUN apt install -y nvidia-common
+RUN apt install -y libcuda1-384
+
+RUN dpkg-reconfigure debconf
+
+# Switch to the new user
+USER $user
+
+
+# Set path to python libs
+ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/usr/local/lib/python2.7/dist-packages/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.AmlObj-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Mtg-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Sequence_analysis-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Matching-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Statistic-1.2.0-py2.7-linux-x86_64.egg/lib/
+
+# Change working directory
+WORKDIR /home/durand/devlp/
+
+# Set the default entry point & arguments
+# ENTRYPOINT ["jupyter", "notebook", "--no-browser"]
+# CMD ["--port=8888", "--ip='*'",  "--NotebookApp.token=''"]
+
+# Once in the container
+# jupyter notebook --ip 0.0.0.0 --no-browser
+# Will not start a browser but the host can use its browser with
+# returned URL

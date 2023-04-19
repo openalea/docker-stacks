@@ -1,8 +1,0 @@
-#!/bin/bash -l
-
-# ==== ONLY EDIT WITHIN THIS BLOCK =====
-export OPENALEA_ENV=strawberry-openalea
-
-# ==== ONLY EDIT WITHIN THIS BLOCK =====
-
-exec "$@"

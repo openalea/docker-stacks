@@ -1,0 +1,262 @@
+Bootstrap: docker
+From: ubuntu:16.04
+
+# .def files for Singularity image to be used with vplants
+
+# Tested with singularity version 3.10.4-2.el8
+
+%help
+This singularity image contains python libraries to run eye-movement analysis data.
+You may run the image by using
+singularity run --app jupyter -e -B /my_scratch:/scratch:rw vplants_1_0.simg
+where /my_scratch is the name of a host directory containing some jupyter notebook(s) you want to run withing the container and assuming vplants_1_0.simg is the name of the file produce by singularity build on the present definition file.
+If you just want to run an ipython console, use
+singularity run --app console -e vplants_1_0.simg
+If you need to run x11-based applications, first set DISPLAY as in host
+
+%labels
+AUTHOR Jean-Baptiste Durand
+VERSION="1.0"
+VCS-URL="https://gricad-gitlab.univ-grenoble-alpes.fr/durandje/vplants.bak.git"
+VCS-REF="6654a6859651640f9b0e4a12d2efa28683e2313e"
+BUILD.CMD="sudo singularity build vplants_1_0.simg Docker-Singularity/vplants.def"
+
+
+%setup
+mkdir -p ${SINGULARITY_ROOTFS}/mnt/devlp/
+export R_VERSION="3.4.4-1xenial0"
+# R repository mirror to install extra packages
+export R_REPOS="https://stat.ethz.ch"
+
+# git clone https://gricad-gitlab.univ-grenoble-alpes.fr/durandje/vplants.bak.git
+
+# files to copy inside the image
+%files
+./openalea-stable/ /mnt/devlp/openalea-stable/
+./vplants-stable-with-aml/ /mnt/devlp/vplants-stable-with-aml/
+
+%environment
+export LANG=C.UTF-8 LC_ALL=C.UTF-8
+# R version used here
+
+%post
+
+# Change mirror for ubuntu packages
+# sed -i 's|http://archive.ubuntu.com/|http://fr.archive.ubuntu.com/|g' /etc/apt/sources.list
+
+apt update && apt install -y gedit && \
+    apt install -y git
+    
+# Install packages for openalea / vplants compilation
+apt install -y freeglut3
+apt install -y freeglut3-dev
+apt install -y libboost-python1.58.0 libboost1.58-dev libboost-python1.58-dev
+apt install -y libqt4-dev libqt4-dev-bin
+apt install -y libreadline6 libreadline6-dev
+apt install -y pkg-config
+apt install -y pyqt4-dev-tools
+apt install -y python-matplotlib
+apt install -y python-qt4 python-qt4-dev
+apt install -y python-setuptools 
+apt install -y scons 
+
+apt install -y python-pip 
+# Install packages required at execution
+
+# Solve issue ImportError: cannot import name 'main'
+# in pip 
+
+hash pip
+
+# pip install --upgrade pip==19.3.1
+
+python2 -m pip install --upgrade pip==19.3.1 
+
+python2 -m pip install numpy==1.13.3
+python2 -m pip install pandas==0.23.4
+python2 -m pip install matplotlib==2.0.2
+
+python2 -m pip install jupyter notebook jupyter_core
+python2 -m pip install ipykernel
+python2 -m ipykernel install --user
+python2 -m pip install pytest
+python2 -m pip install graphviz
+python2 -m pip install seaborn
+python2 -m pip install pathlib
+python2 -m pip install dill
+
+apt install -y graphviz
+
+apt install -y libann0 libann-dev
+apt install -y libcgal-dev
+# Lapack
+apt install -y libatlas3-base
+apt install -y flex-old
+apt install -y libqhull7 libqhull-dev
+apt install -y libblas3
+apt install -y libmpc-dev libgmp-dev
+apt install -y libmpc3
+apt install -y liblapack-dev
+apt install -y libeigen3-dev
+apt install -y python-networkx
+
+apt-get install -y wget
+apt-get install -y m4
+
+# development tools
+apt install -y ddd
+apt install -y electric-fence
+
+# Downgrade bison
+cd /root
+wget http://launchpadlibrarian.net/140087283/libbison-dev_2.7.1.dfsg-1_amd64.deb
+wget http://launchpadlibrarian.net/140087282/bison_2.7.1.dfsg-1_amd64.deb
+dpkg -i libbison-dev_2.7.1.dfsg-1_amd64.deb
+dpkg -i bison_2.7.1.dfsg-1_amd64.deb
+
+# Compile openalea packages
+cd /mnt/devlp/openalea-stable/openalea/
+python multisetup.py install
+alea_config
+
+# Compile vplants packages
+cd /mnt/devlp/vplants-stable-with-aml/tool
+python setup.py install
+alea_config
+cd ../PlantGL
+python setup.py install
+alea_config
+cd ../stat_tool
+python setup.py install
+alea_config
+cd ../sequence_analysis
+python setup.py install
+alea_config
+cd ../amlobj
+python setup.py install
+alea_config
+cd ../mtg
+python setup.py install
+alea_config
+cd ../tree
+python setup.py install
+alea_config
+cd ../tree_matching
+python setup.py install
+alea_config
+cd ../aml
+python setup.py install
+alea_config
+cd ../tree_statistic
+python setup.py install
+alea_config
+cd ../aml2py
+python setup.py install
+alea_config
+cd ../newmtg
+python setup.py install
+alea_config
+cd ../gnuplot-py-1.8/ 
+python setup.py install
+alea_config
+
+
+
+# Gnuplot installation
+apt install -y gnuplot 
+apt install -y gnuplot-x11
+apt install -y gnuplot-tex 
+apt install -y python-gnuplot
+    
+export R_VERSION="3.4.4-1xenial0"
+# R repository mirror to install extra packages
+export R_REPOS="https://stat.ethz.ch"
+
+# Install R dependencies
+apt install -y software-properties-common apt-transport-https
+apt update
+add-apt-repository "deb $R_REPOS/CRAN/bin/linux/ubuntu xenial/"
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
+apt update
+apt install -y r-base=$R_VERSION
+
+
+mkdir /root/r_analysis
+cd /root/r_analysis
+export R_CONTRIBS="https://cloud.r-project.org"
+export TAR="/bin/tar"
+
+echo 'install.packages("lme4", repos="'$R_CONTRIBS'")' >> r_install.txt
+echo 'install.packages("nlme", repos="'$R_CONTRIBS'")' >> r_install.txt
+echo 'install.packages("MCMCglmm", repos="'$R_CONTRIBS'")' >> r_install.txt
+Rscript r_install.txt
+
+
+# Presumably the last rpy2 version working with python2.7
+python2 -m pip install rpy2==2.8.6
+
+rm -Rf /root/r_analysis
+
+
+# Links to binaries
+ln -s /usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/bin/aml /usr/local/bin/aml
+
+ln -s /usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/bin/pglviewer /usr/local/bin/pglviewer
+
+find /usr/local/lib/python2.7/dist-packages/ -path "*OpenAlea*" -type f -exec chmod o+r "{}" \;
+find /usr/local/lib/python2.7/dist-packages/ -path "*VPlants*" -type f -exec chmod o+r "{}" \;
+
+apt install -y python-nose
+
+apt install -y debconf-utils
+
+echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+echo "keyboard-configuration  keyboard-configuration/variant  select  French" | debconf-set-selections
+echo "keyboard-configuration  keyboard-configuration/layout   select  French" | debconf-set-selections
+
+# Or for example
+# echo "keyboard-configuration  keyboard-configuration/variant  select  English (US)" | debconf-set-selections
+# echo "keyboard-configuration  keyboard-configuration/layout   select  English (US)" | debconf-set-selections
+
+# Install nvidia drivers for PlantGL
+apt install -y nvidia-opencl-icd-384
+apt install -y nvidia-settings 
+apt install -y nvidia-prime
+apt install -y nvidia-384
+apt install -y nvidia-common
+apt install -y libcuda1-384
+
+echo 'debconf debconf/frontend select Dialog' | debconf-set-selections
+
+# Set environment variables
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/python2.7/dist-packages/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.AmlObj-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Mtg-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Sequence_analysis-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Matching-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Statistic-1.2.0-py2.7-linux-x86_64.egg/lib/
+' >>$SINGULARITY_ENVIRONMENT
+
+%runscript
+# /opt/run_jupyter.sh --notebook-dir=$HOME/notebooks --ip="*" --port 8888
+
+##############################
+# App section
+##############################
+
+##############################
+# Console App 
+##############################
+
+%apprun console
+ipython
+
+%apphelp console
+Use "run --app console -e Vplants_1.0.simg" to run an ipython console
+
+##############################
+# Jupyter App 
+##############################
+
+%apprun jupyter
+jupyter notebook --ip 0.0.0.0 --no-browser --allow-root
+
+%apphelp jupyter
+Use "run --app jupyter -e Vplants_1.0.simg" to run a jupyter notebook
+
+
