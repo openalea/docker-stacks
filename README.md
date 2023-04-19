@@ -9,7 +9,7 @@ To use any of those images, you will need to :
 
 Note that the `docker run` command may get more complicated depending of what the docker needs to run.
 
-### Example with the python2 image and the Strawberry image
+### Launching OpenAlea and Visualea in Docker 
 
 For the python2 image : 
 
@@ -37,11 +37,6 @@ docker run -it --rm --env="DISPLAY=${ipAdress}:0" --volume=$PWD:/home/User001:rw
 lsof -n -i | grep 6000 | grep IPv6 | awk '{print $2}' | xargs kill -9
 ```
 
-As for Strawberry image : 
-
-```
-WIP
-```
 
 ### Contribute
 
