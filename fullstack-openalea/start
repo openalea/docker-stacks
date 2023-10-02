@@ -1,0 +1,8 @@
+#!/bin/bash -l
+
+# ==== ONLY EDIT WITHIN THIS BLOCK =====
+export OPENALEA_ENV=fullstack-openalea
+
+# ==== ONLY EDIT WITHIN THIS BLOCK =====
+
+exec "$@"
