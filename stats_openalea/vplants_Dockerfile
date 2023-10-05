@@ -1,15 +1,15 @@
 # Dockerfile for use with vplants
 
 
-#Download base image ubuntu 16.04
-FROM ubuntu:16.04
-LABEL maintainer="Jean-Baptiste Durand <jean-baptiste.durand@inria.fr>"
+#Download base image ubuntu 18.04
+FROM ubuntu:18.04
+LABEL maintainer="Jean-Baptiste Durand <jean-baptiste.durand@cirad.fr>"
 LABEL version="1.0"
-LABEL vcs-url="https://gricad-gitlab.univ-grenoble-alpes.fr/durandje/vplants.bak.git"
-LABEL vcs-ref="6654a6859651640f9b0e4a12d2efa28683e2313e"
-LABEL docker.build.cmd="docker build -f Docker-Singularity/vplants_Dockerfile -t vplants/vplants:1.0  ."
-LABEL docker.cmd="docker run --rm -it -p 8888:8888 vplants/vplants:1.0"
-LABEL docker.cmd.variant="docker run -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/my_host_home_dir/.Xauthority -v my_library_path:/mnt/path:rw --user my_id --rm -it --net=host vplants/vplants:1.0"
+LABEL vcs-url="https://github.com/openalea/docker-stacks.git"
+LABEL vcs-ref="bb43170"
+LABEL docker.build.cmd="docker build -f stats_openalea/vplants_Dockerfile -t stats_openalea/stats_openalea:1.0  ."
+LABEL docker.cmd="docker run --rm -it -p 8888:8888 stats_openalea/stats_openalea:1.0"
+LABEL docker.cmd.variant="docker run -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/my_host_home_dir/.Xauthority -v my_library_path:/mnt/path:rw --user my_id --rm -it --net=host stats_openalea/stats_openalea:1.0"
 LABEL usage="jupyter notebook --ip 0.0.0.0 --no-browser"
 # usual other labels
 # docker.cmd: How to run a container based on the image under the Docker runtime.
@@ -36,64 +36,70 @@ RUN mkdir -p $home &&\
     useradd $user --home-dir $home && \
     chown -R $user: $home && \
     mkdir -p $devlp && \
+    chown -R $user: $devlp && \
     cd $devlp
 
-COPY --chown=durand ./openalea-stable/ /home/durand/devlp/openalea-stable/
+#COPY --chown=durand ./openalea-stable/ /home/durand/devlp/openalea-stable/
 # NB: COPY --chown=durand em-analysis $devlp would not preserve subdirectories
 # since the destination would be incomplete
-COPY --chown=durand ./vplants-stable-with-aml/  /home/durand/devlp/vplants-stable-with-aml/
+#COPY --chown=durand ./vplants-stable-with-aml/  /home/durand/devlp/vplants-stable-with-aml/
     
 # Install packages for openalea / vplants compilation
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt update
+
 RUN apt install -y freeglut3
 RUN apt install -y freeglut3-dev
-RUN apt install -y libboost-python1.58.0 libboost1.58-dev libboost-python1.58-dev
-#RUN apt install libboost1.58-tools-dev
+RUN apt install -y libboost-python1.65.1 libboost1.65-dev libboost-python1.65-dev
+RUN apt install libboost1.65-tools-dev
 RUN apt install -y libqt4-dev libqt4-dev-bin
-RUN apt install -y libreadline6 libreadline6-dev
+RUN apt install -y libreadline7 libreadline-dev
 RUN apt install -y pkg-config
 RUN apt install -y pyqt4-dev-tools
-RUN apt install -y python-matplotlib
+# apt would ask question on time zones for python-matplotlib
+RUN apt -qq install -y python-matplotlib=2.1.1-2ubuntu3
 RUN apt install -y python-qt4 python-qt4-dev
-RUN apt install -y python-setuptools 
-RUN apt install -y scons 
+RUN apt install -y python-setuptools
+RUN apt install -y scons=3.0.1-1
 
-RUN apt install -y python-pip 
+RUN apt install -y python-pip=9.0.1-2.3~ubuntu1.18.04.8
 # Install packages required at execution
 
 # Solve issue ImportError: cannot import name 'main'
-# in pip 
+# in pip
 
 RUN hash pip
 
-RUN python2 -m pip install --upgrade pip==19.3.1 
+RUN python2 -m pip install --upgrade pip==20.3.4
 
-RUN python2 -m pip install numpy==1.13.3
-RUN python2 -m pip install pandas==0.23.4
-RUN python2 -m pip install matplotlib==2.0.2
+RUN python2 -m pip install numpy==1.16.6
+RUN python2 -m pip install pandas==0.24.2
+RUN python2 -m pip install matplotlib==2.1.1
 
 RUN python2 -m pip install jupyter notebook jupyter_core
 RUN python2 -m pip install ipykernel
 RUN python2 -m ipykernel install --user
-RUN python2 -m pip install pytest
-RUN python2 -m pip install graphviz
-RUN python2 -m pip install seaborn
-RUN python2 -m pip install pathlib
-RUN python2 -m pip install dill
+RUN python2 -m pip install pytest==4.6.11
+RUN python2 -m pip install graphviz==0.16
+RUN python2 -m pip install seaborn==0.9.1
+RUN python2 -m pip install pathlib==1.0.1
+RUN python2 -m pip install dill==0.3.5.1
 
-RUN apt install -y graphviz
+RUN apt install -y graphviz=2.40.1-2
 
-RUN apt install -y libann0 libann-dev
-RUN apt install -y libcgal-dev
+RUN apt install -y libann0=1.1.2+doc-6 libann-dev=1.1.2+doc-6
+RUN apt install -y libcgal-dev=4.11-2build1
 # Lapack
-RUN apt install -y libatlas3-base
-RUN apt install -y flex-old
-RUN apt install -y libqhull7 libqhull-dev
-RUN apt install -y libblas3
-RUN apt install -y libmpc-dev libgmp-dev
-RUN apt install -y libmpc3
-RUN apt install -y liblapack-dev
-RUN apt install -y libeigen3-dev
-RUN apt install -y python-networkx
+RUN apt install -y libatlas3-base=3.10.3-5
+RUN apt install -y flex-old=2.5.4a-10ubuntu2
+RUN apt install -y libqhull7=2015.2-4 libqhull-dev=2015.2-4
+RUN apt install -y libblas3=3.7.1-4ubuntu1
+RUN apt install -y libmpc-dev=1.1.0-1 libgmp-dev=2:6.1.2+dfsg-2ubuntu0.1
+RUN apt install -y libmpc3=1.1.0-1
+RUN apt install -y liblapack-dev=3.7.1-4ubuntu1
+RUN apt install -y libeigen3-dev=3.3.4-4
+RUN apt install -y python-networkx=1.11-1ubuntu3
 
 RUN apt-get install -y wget
 RUN apt-get install -y m4
@@ -109,125 +115,175 @@ RUN wget http://launchpadlibrarian.net/140087282/bison_2.7.1.dfsg-1_amd64.deb
 RUN dpkg -i libbison-dev_2.7.1.dfsg-1_amd64.deb
 RUN dpkg -i bison_2.7.1.dfsg-1_amd64.deb
 
-# Compile openalea packages
-RUN cd /home/durand/devlp/openalea-stable/openalea/ && \
-    python multisetup.py install && \
-    alea_config
-
-# Compile vplants packages
-RUN cd /home/durand/devlp/vplants-stable-with-aml/tool && \
-    python setup.py install && \
-    alea_config && \
-    cd ../PlantGL  && \
-    python setup.py install && \
-    alea_config && \
-    cd ../stat_tool  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../sequence_analysis  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../amlobj  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../mtg  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../tree  && \
-    python setup.py install  && \
-    alea_config && \ 
-    cd ../tree_matching  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../aml  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../tree_statistic  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../aml2py  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../newmtg  && \
-    python setup.py install  && \
-    alea_config && \
-    cd ../gnuplot-py-1.8/ && \
-    python setup.py install && \
-    alea_config
-
+## Compile openalea packages
 
 # Gnuplot installation
-RUN apt install -y gnuplot 
-RUN apt install -y gnuplot-x11
-RUN apt install -y gnuplot-tex 
-RUN apt install -y python-gnuplot
-    
-ENV R_VERSION="3.4.4-1xenial0"
+RUN apt install -y gnuplot=5.2.2+dfsg1-2ubuntu1
+RUN apt install -y gnuplot-x11=5.2.2+dfsg1-2ubuntu1
+RUN apt install -y gnuplot-data=5.2.2+dfsg1-2ubuntu1
+RUN apt install -y python-gnuplot=1.8-6
+
+ENV R_VERSION="3.6.3-1bionic"
 # R repository mirror to install extra packages
-ENV R_REPOS="https://stat.ethz.ch"
+ENV R_REPOS="https://pbil.univ-lyon1.fr"
 
 # Install R dependencies
-RUN apt update
 RUN apt install -y software-properties-common apt-transport-https
 RUN apt update
-RUN add-apt-repository "deb $R_REPOS/CRAN/bin/linux/ubuntu xenial/"
+
 RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
+RUN add-apt-repository -y "deb $R_REPOS/CRAN/bin/linux/ubuntu bionic-cran35/"
 RUN apt update
 RUN apt install -y r-base=$R_VERSION
 
-ENV R_CONTRIBS="https://cloud.r-project.org" 
-ENV TAR="/bin/tar" 
+ENV R_CONTRIBS="https://cloud.r-project.org"
+ENV TAR="/bin/tar"
 
-RUN mkdir /root/r_analysis && \
-    cd /root/r_analysis && \
-    echo 'install.packages("lme4", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
-    echo 'install.packages("nlme", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
-    echo 'install.packages("MCMCglmm", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
-    Rscript r_install.txt
+
+
+# RUN echo 'install.packages("nlme", repos="'$R_CONTRIBS'")' > r_install.txt  && \
+#    echo 'install.packages("MCMCglmm", repos="'$R_CONTRIBS'")' >> r_install.txt  && \
+#    Rscript r_install.txt
 
 
 # Presumably the last rpy2 version working with python2.7
+RUN apt install -y libpcre2-8-0=10.31-2
+RUN ln -s /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/libpcre2-8.so
 RUN python2 -m pip install rpy2==2.8.6
 
 RUN rm -Rf /root/r_analysis
 
+# Install AML
+RUN cd /root
+RUN wget https://repo.anaconda.com/archive/Anaconda3-2023.03-1-Linux-x86_64.sh
+RUN bash ./Anaconda3-2023.03-1-Linux-x86_64.sh -b
+
+RUN mkdir /root/AML/ /root/StructureAnalysis/
+
+RUN git clone https://github.com/VirtualPlants/AML /root/AML/
+
+RUN git clone -b  aml https://github.com/openalea/StructureAnalysis.git /root/StructureAnalysis/
+RUN cd /root/StructureAnalysis/
+
+ENV PATH="/root/anaconda3/bin/":$PATH
+
+RUN conda create -y --name aml
+RUN conda init bash
+
+SHELL ["/bin/bash", "-c"]
+
+RUN source /root/.bashrc
+
+# ; exit 0 ignores error
+# "You may need to close and restart your shell after running 'conda init'"
+RUN conda activate aml; exit 0
+
+RUN conda install -y -c conda-forge openalea.deploy
+RUN conda install -y openalea.sconsx -c openalea3 -c conda-forge
+
+# RUN cd /root/StructureAnalysis/tool && \
+#    python setup.py install
+
+# Use python3?
+# Error
+#  File "/root/anaconda3/envs/aml/lib/python3.11/configparser.py", line 443, in _interpolate_some
+#    raise InterpolationSyntaxError(
+# configparser.InterpolationSyntaxError: '%' must be followed by '%' or '(', found: '%{name} = %{version}'
+
+
+# RUN cd /root/StructureAnalysis/tool && \
+#     python2.7 setup.py install
+# Error
+# Traceback (most recent call last):
+#  File "setup.py", line 9, in <module>
+#    from openalea.deploy.metainfo import read_metainfo
+# ImportError: No module named openalea.deploy.metainfo
+
+
+
+
+# RUN cd /home/durand/devlp/openalea-stable/openalea/ && \
+#    python multisetup.py install && \
+#    alea_config
+#
+## Compile vplants packages
+#RUN cd /home/durand/devlp/vplants-stable-with-aml/tool && \
+#    python setup.py install && \
+#    alea_config && \
+#    cd ../PlantGL  && \
+#    python setup.py install && \
+#    alea_config && \
+#    cd ../stat_tool  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../sequence_analysis  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../amlobj  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../mtg  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../tree  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../tree_matching  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../aml  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../tree_statistic  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../aml2py  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../newmtg  && \
+#    python setup.py install  && \
+#    alea_config && \
+#    cd ../gnuplot-py-1.8/ && \
+#    python setup.py install && \
+#    alea_config
+
 
 # Links to binaries
-RUN ln -s /usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/bin/aml /usr/local/bin/aml
-
-RUN ln -s /usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/bin/pglviewer /usr/local/bin/pglviewer
-
-RUN find /usr/local/lib/python2.7/dist-packages/ -path "*OpenAlea*" -type f -exec chmod o+r "{}" \;
-RUN find /usr/local/lib/python2.7/dist-packages/ -path "*VPlants*" -type f -exec chmod o+r "{}" \;
-
-RUN apt install -y python-nose
-
-RUN apt install -y debconf-utils
-
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN echo "keyboard-configuration  keyboard-configuration/variant  select  French" | debconf-set-selections
-RUN echo "keyboard-configuration  keyboard-configuration/layout   select  French" | debconf-set-selections
-
-# Or for example
-# RUN echo "keyboard-configuration  keyboard-configuration/variant  select  English (US)" | debconf-set-selections
-# RUN echo "keyboard-configuration  keyboard-configuration/layout   select  English (US)" | debconf-set-selections
-
-# Install nvidia drivers for PlantGL
-RUN apt install -y nvidia-opencl-icd-384
-RUN apt install -y nvidia-settings 
-RUN apt install -y nvidia-prime
-RUN apt install -y nvidia-384
-RUN apt install -y nvidia-common
-RUN apt install -y libcuda1-384
-
-RUN dpkg-reconfigure debconf
-
+#RUN ln -s /usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/bin/aml /usr/local/bin/aml
+#
+#RUN ln -s /usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/bin/pglviewer /usr/local/bin/pglviewer
+#
+#RUN find /usr/local/lib/python2.7/dist-packages/ -path "*OpenAlea*" -type f -exec chmod o+r "{}" \;
+#RUN find /usr/local/lib/python2.7/dist-packages/ -path "*VPlants*" -type f -exec chmod o+r "{}" \;
+#
+#RUN apt install -y python-nose
+#
+#RUN apt install -y debconf-utils
+#
+#RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+#RUN echo "keyboard-configuration  keyboard-configuration/variant  select  French" | debconf-set-selections
+#RUN echo "keyboard-configuration  keyboard-configuration/layout   select  French" | debconf-set-selections
+#
+## Or for example
+## RUN echo "keyboard-configuration  keyboard-configuration/variant  select  English (US)" | debconf-set-selections
+## RUN echo "keyboard-configuration  keyboard-configuration/layout   select  English (US)" | debconf-set-selections
+#
+## Install nvidia drivers for PlantGL
+#RUN apt install -y nvidia-opencl-icd-384
+#RUN apt install -y nvidia-settings 
+#RUN apt install -y nvidia-prime
+#RUN apt install -y nvidia-384
+#RUN apt install -y nvidia-common
+#RUN apt install -y libcuda1-384
+#
+#RUN dpkg-reconfigure debconf
+#
 # Switch to the new user
 USER $user
 
 
-# Set path to python libs
-ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/usr/local/lib/python2.7/dist-packages/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.AmlObj-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Mtg-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Sequence_analysis-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Matching-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Statistic-1.2.0-py2.7-linux-x86_64.egg/lib/
+## Set path to python libs
+#ENV LD_LIBRARY_PATH=/usr/local/lib:/usr/lib:/usr/local/lib/python2.7/dist-packages/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Aml-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.AmlObj-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Mtg-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.PlantGL-2.19.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Sequence_analysis-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Stat_Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tool-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Matching-1.2.0-py2.7-linux-x86_64.egg/lib/:/usr/local/lib/python2.7/dist-packages/VPlants.Tree_Statistic-1.2.0-py2.7-linux-x86_64.egg/lib/
 
 # Change working directory
 WORKDIR /home/durand/devlp/
