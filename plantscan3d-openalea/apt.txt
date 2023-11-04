@@ -1,0 +1,2 @@
+libxrender1
+libxcb-xinerama0

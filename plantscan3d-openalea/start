@@ -1,0 +1,10 @@
+#!/bin/bash -l
+
+# ==== ONLY EDIT WITHIN THIS BLOCK =====
+export OPENALEA_ENV=plantscan3d-openalea
+export LIBGL_ALWAYS_INDIRECT=1
+export XDG_RUNTIME_DIR=/tmp/runtime-root
+
+# ==== ONLY EDIT WITHIN THIS BLOCK =====
+
+exec "$@"

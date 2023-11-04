@@ -1,0 +1,16 @@
+name: plantscan3d
+channels:
+  - fredboudon
+  - conda-forge
+dependencies:
+  - openalea.plantscan3d
+  - openalea.mtg
+  - openalea.plantgl
+  - openalea.lpy
+  - jupyterlab>=3.0.16
+  - jupyterlab_widgets
+  - ipython=7
+  - matplotlib
+  - numpy=1.20.*
+  - pandas
+  - pip
