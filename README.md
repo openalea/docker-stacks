@@ -24,18 +24,18 @@ So far, here is a list of images created. You can easily add your creation of im
 At launching one image, a __conda__ environments named _openalea_ is automaticaly loaded with all packages already installed.
 You can directly launch a jupyter interface with:
 ```
-docker run -it --rm -p 8888:8888 openalea/openalea-widgets-notebook:latest jupyter lab --ip 0.0.0.0
+docker run -it --rm -p 8888:8888 openalea/notebook-openalea:latest jupyter lab --ip 0.0.0.0
 ```
 or do it in two steps, 1) launching a bash session inside the container, 2) lauch a jupyter lab:
 ```
-docker run -it --rm -p 8888:8888 openalea/openalea-widgets-notebook:latest /bin/bash
+docker run -it --rm -p 8888:8888 openalea/notebook-openalea:latest /bin/bash
 
 jupyter lab --ip='*' --port=8888 --no-browser
 ```
 To access files from your local hard drive from within the Docker Jupyterlab, you need to use a Docker [volume mount](https://docs.docker.com/storage/volumes/). The following command will mount your home directory in the docker container and launch the Jupyterlab from there.
 
 ```
-docker run -it --rm --volume $HOME:$HOME -p 8888:8888 pangeo/pangeo-notebook:latest jupyter lab --ip 0.0.0.0 $HOME
+docker run -it --rm --volume $HOME:$HOME -p 8888:8888 openalea/notebook-openalea:latest jupyter lab --ip 0.0.0.0 $HOME
 ```
 
 ### How to build images
