@@ -62,7 +62,8 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     bison \
     flex \
-    freeglut3-dev
+    freeglut3-dev \
+    ipython
 
 WORKDIR ${HOME}
 
@@ -75,21 +76,29 @@ ENTRYPOINT ["/bin/bash"]
 
 #COPY --chown=openalea:openalea . /home/openalea
 RUN cd StructureAnalysis/tool && \
-    python setup.py develop && \
-    cd ../../AML/amlobj && \
-    python setup.py develop && \
-    cd ../../StructureAnalysis/stat_tool && \
-    python setup.py develop && \
-    cd ../sequence_analysis && \
-    python setup.py develop && \
-    cd ../../AML/aml && \
-    python setup.py develop && \
-    cd ../../
+   python setup.py develop && \
+   cd ../../AML/amlobj && \
+   python setup.py develop && \
+   cd ../../StructureAnalysis/stat_tool && \
+   python setup.py develop && \
+   cd ../sequence_analysis && \
+   python setup.py develop && \
+   cd ../../AML/aml && \
+   python setup.py develop && \
+   cd ../../
+
+RUN mkdir $HOME/external
+
+RUN chown -R ${NB_USER} StructureAnalysis AML
+RUN chgrp -R ${NB_UID} StructureAnalysis AML
+RUN chmod 755 external && chown -R ${NB_UID} external && chgrp -R ${NB_UID} external
 
 ENV OPENALEA_LIB="/home/openalea/AML/aml/build-scons/lib:/home/openalea/AML/amlobj/build-scons/lib:/home/openalea/StructureAnalysis/tool/build-scons/lib:/home/openalea/StructureAnalysis/sequence_analysis/build-scons/lib:/home/openalea/StructureAnalysis/stat_tool/build-scons/lib:/usr/local/lib" \
-    OPENALEA_BIN="/home/openalea/AML/aml/build-scons/bin" 
+   OPENALEA_BIN="/home/openalea/AML/aml/build-scons/bin"
 ENV LD_LIBRARY_PATH=${OPENALEA_LIB} \
     PATH=$PATH:${OPENALEA_BIN}
+
+RUN echo 'OPENALEA_LIB="/home/openalea/AML/aml/build-scons/lib:/home/openalea/AML/amlobj/build-scons/lib:/home/openalea/StructureAnalysis/tool/build-scons/lib:/home/openalea/StructureAnalysis/sequence_analysis/build-scons/lib:/home/openalea/StructureAnalysis/stat_tool/build-scons/lib:/usr/local/lib"' >> ${HOME}/.bashrc
 
 # root
 USER ${NB_USER}
