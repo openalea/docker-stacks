@@ -86,7 +86,7 @@ If you want to add your image, when you're done creating the folder describing y
 
 ### Launching OpenAlea and Visualea in Docker 
 
-For the python2 image : 
+#### Python2 image : 
 
 You need a lot of options in the `docker run` since the container run a X server (they are indicated in the README of the file).
 Additionally, there is no need to open the ports since it just open an app.
@@ -97,7 +97,9 @@ docker pull openalea/python2
 docker run -it --env QT_X11_NO_MITSHM=1 -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix --volume=$PWD:/home/User001:rw openalea/python2
 ```
 
-For Mac users, preliminary steps are necessary (cf. https://cntnr.io/running-guis-with-docker-on-mac-os-x-a14df6a76efc)
+#### Mac users
+
+Preliminary steps are necessary (cf. https://cntnr.io/running-guis-with-docker-on-mac-os-x-a14df6a76efc)
 
 ```
 # retrive IP address from host OS
@@ -112,6 +114,50 @@ docker run -it --rm --env="DISPLAY=${ipAdress}:0" --volume=$PWD:/home/User001:rw
 lsof -n -i | grep 6000 | grep IPv6 | awk '{print $2}' | xargs kill -9
 ```
 
+#### Windows users
+
+- ##### Install WSL2, Docker and an X server
+	- Install WSL2
+		- Launch `PowerShell` as an administratorr (right-clic)
+		  `wsl --install -d Ubuntu`  
+		- Check which Linux distribution is installed and which version (2 is mandatory):
+		  `wsl -l -v`  
+		  If necessary:  
+		  `wsl --set-default-version 2`  
+		  `wsl --setdefault Ubuntu`  
+		    
+		  Then launch `Ubuntu` and into the Ubuntu terminal:  
+		- update `sudo apt update && sudo apt upgrade -y`
+	- Install docker
+		- [Download and install Docker](https://docs.docker.com/desktop/install/windows-install/)
+		- During installation process, make sure you need WSL2 integration.
+		- In `Docker Desktop` -> Parameters  -> Resources -> WSL integration -> `Enable integration with additional distros` and enable for `Ubuntu`
+	- Install an X-Server
+		- [Download and install Vcxsrv](https://sourceforge.net/projects/vcxsrv/)
+- ##### Use a graphical app in a Docker container
+	- !!! Do this only once !!!
+	  You have to activate the graphical display for your container, so first propagate the i.p. adress to the `DISPLAY` environment viariable:  
+		- Launch `Ubuntu`
+		- In the the `.bashrc` file, add the following lines:
+		  ```
+		  export DISPLAY=$(route.exe print | grep 0.0.0.0 | head -1 | awk '{print $4}'):0.0
+		  export LIBGL_ALWAYS_INDIRECT=1
+		  ```
+	- Routine for launching your graphical app
+		- Launch `Vcxsrv` (`X-Launch` icon on desktop or in App bar): Multiple Windows -> Start no client -> Enable `Disable access cpontrol` (you can eventualy save this configuration for later).
+		- Launch `Docker Desktop`
+		- Lancer `Ubuntu`
+		- Now everything should be ok for a graphical display with your app in a container. Let's make a test. In your Ubuntu terminal: `docker run --rm -it -e DISPLAY fr3nd/xeyes` and you should see 2 eyes: congrats !
+		    
+		  That's it.... you should be able to run any graphical application embedded in a docker. Let's try some more serious stuff:  
+		  `docker run --rm -it -e DISPLAY openalea/python2`  
+	- What about my data ?
+		- In `WSL` / `Ubuntu`, `C:` and `D:` drives are located in `/mnt/c` and `/mnt/d` respectively.
+		- If you want to access your data into your container app, you have to bind mount the directories you want to access. Let's say you want to run the `openalea/python2` container with full access to both your `C:` and `D:` drives:
+			- run `docker run --rm -it -e DISPLAY -v /mnt/c:/home/User001/c -v /mnt/d:/home/User001/d openalea/python2`
+			- you should see your directories `c` and `d` with all your data available on your home directory inside the container (`home/User001` is the home directory for the container), and these directories can be read / modified / written
+			- if you notice some performance issues, we recommand to either 1) bind mount smaller directories (i.e. not the full `/mnt/c` or `/mnt/d` drives, but only usefull subparts of these) or 2) if your workflow allows this, you can [create a docker volume](https://docs.docker.com/get-started/05_persisting_data/#persist-the-todo-data)
+		- to ease the launch of your app, we recommand to create an alias in your `./bashrc` file: `alias openalea=docker run --rm -it -e DISPLAY -v /mnt/c:/home/User001/c -v /mnt/d:/home/User001/d openalea/python2`. Then in your terminal you just have to type `openalea` to launch the container, access your data and have the graphical display enabled.
 
 ### Contribute
 
