@@ -38,12 +38,12 @@ RUN echo "Creating ${NB_USER} user..." && \
     echo ". ${CONDA_DIR}/etc/profile.d/conda.sh ; conda activate ${CONDA_ENV}" > /etc/profile.d/init_conda.sh && \
     mkdir -p ${CONDA_DIR} && \
     chown -R ${NB_USER}:${NB_USER} ${CONDA_DIR}/.. && \
-    chmod g+w /etc/passwd 
+    chmod g+w /etc/passwd
 
 # SEE: https://github.com/phusion/baseimage-docker/issues/58
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Install all OS dependencies 
+# Install all OS dependencies
 # install  OpenGL driver required for openalea installation
 RUN echo "Installing Apt-get packages..." && \
     apt-get update --fix-missing && \
@@ -56,7 +56,7 @@ RUN echo "Installing Apt-get packages..." && \
 
 RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su && \
     sed -i.bak -e 's/^%admin/#%admin/' /etc/sudoers && \
-    sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers 
+    sed -i.bak -e 's/^%sudo/#%sudo/' /etc/sudoers
 
 USER ${NB_USER}
 WORKDIR ${HOME}
@@ -80,7 +80,7 @@ RUN echo "Installing Miniforge..." && \
     conda config --system --set show_channel_urls true && \
     conda update --all --quiet --yes && \
     mamba clean -afy && \
-    rm -rf "/home/${NB_USER}/.cache/yarn" 
+    rm -rf "/home/${NB_USER}/.cache/yarn"
 
 EXPOSE 8888
 ENTRYPOINT ["/opt/start"]
@@ -128,21 +128,34 @@ ONBUILD RUN echo "Checking for 'conda-linux-64.lock' or 'environment.yml'..." \
 # remove cache https://github.com/pypa/pip/pull/6391 ?
 ONBUILD RUN echo "Checking for pip 'requirements.txt'..." \
         ; if test -f "requirements.txt" ; then \
-        /bin/bash -c ". activate ${CONDA_ENV}" && \
         ${NB_PYTHON_PREFIX}/bin/pip install --no-cache-dir -r requirements.txt \
         ; fi
 
 # Install packages from source
 ONBUILD RUN echo "Checking for 'sources.txt' to install from git repo..." \
         ; if test -f "sources.txt" ; then \
-        /bin/bash -c ". activate ${CONDA_ENV}" && \
         for p in `cat sources.txt`; do \
         git clone $p ; \
         cd `basename $p .git`; ${NB_PYTHON_PREFIX}/bin/python setup.py install; cd .. \
         ; done \
         ; fi
 
+# Run postBuild script within environment as root
+ONBUILD USER root
+ONBUILD RUN echo "Checking for 'postBuild_root'..." \
+        ; if test -f "postBuild_root" ; then \
+        chmod +x postBuild_root \
+        && ./postBuild_root \
+        && rm -rf /tmp/* \
+        && rm -rf ${HOME}/.cache ${HOME}/.npm ${HOME}/.yarn \
+        && rm -rf ${NB_PYTHON_PREFIX}/share/jupyter/lab/staging \
+        && find ${CONDA_DIR} -follow -type f -name '*.a' -delete \
+        && find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete \
+        && find ${CONDA_DIR} -follow -type f -name '*.js.map' -delete \
+        ; fi
+
 # Run postBuild script within environment
+ONBUILD USER ${NB_USER}
 ONBUILD RUN echo "Checking for 'postBuild'..." \
         ; if test -f "postBuild" ; then \
         chmod +x postBuild \
@@ -154,7 +167,7 @@ ONBUILD RUN echo "Checking for 'postBuild'..." \
         && find ${CONDA_DIR} -follow -type f -name '*.pyc' -delete \
         && find ${CONDA_DIR} -follow -type f -name '*.js.map' -delete \
         ; fi
-        
+
 # Overwrite start entrypoint script if present
 ONBUILD RUN echo "Checking for 'start'..." \
         ; if test -f "start" ; then \
