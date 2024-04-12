@@ -1,0 +1,7 @@
+pathlib
+dill
+pandas
+notebook
+ipykernel
+pytest
+graphviz

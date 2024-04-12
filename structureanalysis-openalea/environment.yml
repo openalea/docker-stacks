@@ -1,0 +1,15 @@
+name: openalea
+channels:
+  - openalea
+  - conda-forge
+dependencies:
+  - python=2
+  - setuptools
+  - openalea.deploy
+  - openalea.sconsx
+  - bison
+  - flex
+  - boost
+  - ipython
+  - jupyterlab
+  - pip

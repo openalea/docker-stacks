@@ -1,0 +1,21 @@
+#!/bin/bash -l
+
+export NB_PYTHON_PREFIX=/opt/conda/envs/openalea
+
+export CLANG=gcc
+export CLANG__=g++
+
+git clone https://github.com/openalea/StructureAnalysis.git -b new_python_api
+git clone https://github.com/VirtualPlants/AML.git -b docker
+
+cd StructureAnalysis/tool
+${NB_PYTHON_PREFIX}/bin/python setup.py develop
+cd ../../AML/amlobj
+${NB_PYTHON_PREFIX}/bin/python setup.py develop
+cd ../../StructureAnalysis/stat_tool
+${NB_PYTHON_PREFIX}/bin/python setup.py develop
+cd ../sequence_analysis
+${NB_PYTHON_PREFIX}/bin/python setup.py develop
+#cd ../../AML/aml
+#${NB_PYTHON_PREFIX}/bin/python setup.py develop
+cd ../../

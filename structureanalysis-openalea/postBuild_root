@@ -1,0 +1,17 @@
+#!/bin/bash -l
+
+add-apt-repository -y ppa:rock-core/qt4
+apt-get update
+apt install -y --allow-unauthenticated libqt4-declarative libqt4* libqtcore4 libqtgui4 libqtwebkit4 qt4*
+
+wget http://archive.ubuntu.com/ubuntu/pool/universe/q/qt-assistant-compat/libqtassistantclient4_4.6.3-7build1_amd64.deb
+apt-get install -y ./libqtassistantclient4_4.6.3-7build1_amd64.deb
+rm -f ./libqtassistantclient4_4.6.3-7build1_amd64.deb
+
+wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python-qt4/python-qt4_4.12.1+dfsg-2_amd64.deb
+apt-get install -y ./python-qt4_4.12.1+dfsg-2_amd64.deb
+rm -f ./python-qt4_4.12.1+dfsg-2_amd64.deb
+
+wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python-pyaudio/python-pyaudio_0.2.11-1build2_amd64.deb
+apt-get install -y ./python-pyaudio_0.2.11-1build2_amd64.deb
+rm -f ./python-pyaudio_0.2.11-1build2_amd64.deb

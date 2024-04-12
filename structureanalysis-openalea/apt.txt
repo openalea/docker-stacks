@@ -1,0 +1,9 @@
+git
+vim
+tree
+flex
+software-properties-common
+libreadline-dev
+pkg-config
+freeglut3-dev
+build-essential

@@ -1,0 +1,14 @@
+#!/bin/bash -l
+
+# ==== ONLY EDIT WITHIN THIS BLOCK =====
+export OPENALEA_ENV=openala
+export OPENALEA_LIB="/home/openalea/AML/aml/build-scons/lib:/home/openalea/AML/amlobj/build-scons/lib:/home/openalea/StructureAnalysis/tool/build-scons/lib:/home/openalea/StructureAnalysis/sequence_analysis/build-scons/lib:/home/openalea/StructureAnalysis/stat_tool/build-scons/lib:/usr/local/lib"
+export OPENALEA_BIN="/home/openalea/AML/aml/build-scons/bin"
+export LD_LIBRARY_PATH=${OPENALEA_LIB} \
+
+PATH=$PATH:${OPENALEA_BIN}
+
+
+# ==== ONLY EDIT WITHIN THIS BLOCK =====
+
+exec "$@"
