@@ -7,7 +7,8 @@ TESTDIR=/home/openalea
 .PHONY: base-openalea
 base-openalea :
 	cd base-openalea ; \
-	docker build --no-cache --progress=plain -t ${DOCKER_USER}/base-openalea:latest .
+	# docker build --no-cache --progress=plain -t ${DOCKER_USER}/base-openalea:latest .
+	docker build --no-cache -t ${DOCKER_USER}/base-openalea:latest .
 
 .PHONY: notebook-openalea
 notebook-openalea : base-openalea
