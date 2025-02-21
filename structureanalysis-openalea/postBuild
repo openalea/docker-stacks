@@ -16,6 +16,6 @@ cd ../../StructureAnalysis/stat_tool
 ${NB_PYTHON_PREFIX}/bin/python setup.py develop
 cd ../sequence_analysis
 ${NB_PYTHON_PREFIX}/bin/python setup.py develop
-#cd ../../AML/aml
-#${NB_PYTHON_PREFIX}/bin/python setup.py develop
+cd ../../AML/aml
+${NB_PYTHON_PREFIX}/bin/python setup.py develop
 cd ../../

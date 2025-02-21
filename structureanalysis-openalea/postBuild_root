@@ -15,3 +15,5 @@ rm -f ./python-qt4_4.12.1+dfsg-2_amd64.deb
 wget http://archive.ubuntu.com/ubuntu/pool/universe/p/python-pyaudio/python-pyaudio_0.2.11-1build2_amd64.deb
 apt-get install -y ./python-pyaudio_0.2.11-1build2_amd64.deb
 rm -f ./python-pyaudio_0.2.11-1build2_amd64.deb
+
+# apt install -y scons

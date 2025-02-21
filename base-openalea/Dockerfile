@@ -61,6 +61,8 @@ RUN echo "auth requisite pam_deny.so" >> /etc/pam.d/su && \
 USER ${NB_USER}
 WORKDIR ${HOME}
 
+COPY ./Fortinet_CA_SSL.crt ${HOME}/
+
 # Prerequisites installation: conda, mamba, pip, tini
 RUN echo "Installing Miniforge..." && \
     set -x && \
@@ -78,6 +80,7 @@ RUN echo "Installing Miniforge..." && \
     echo "conda ${CONDA_VERSION}" >> "${CONDA_DIR}/conda-meta/pinned" && \
     conda config --system --set auto_update_conda false && \
     conda config --system --set show_channel_urls true && \
+    conda config --set ssl_verify ${HOME}/Fortinet_CA_SSL.crt && \
     conda update --all --quiet --yes && \
     mamba clean -afy && \
     rm -rf "/home/${NB_USER}/.cache/yarn"

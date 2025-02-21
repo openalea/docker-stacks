@@ -300,7 +300,6 @@ _r-mutex-1.0.1
 rpy2-3.5.10
 rsml-1.1.2
 scipy-1.10.1
-scons-3.1.2-2
 sed-4.8
 send2trash-1.8.0
 setuptools-67.6.0

@@ -1,14 +1,16 @@
 # Makefile for convenience, (doesn't look for command outputs)
 .PHONY: all
 all: base-openalea notebook-openalea hydroroot-openalea strawberry-openalea fullstack-openalea structureanalysis-openalea
-DOCKER_USER=thomasarsouze
+DOCKER_USER=jbduranddocker
 TESTDIR=/home/openalea
 
 .PHONY: base-openalea
 base-openalea :
+	ln -s base-openalea/Dockerfile ./Dockerfile; \
 	cd base-openalea ; \
 	# docker build --no-cache --progress=plain -t ${DOCKER_USER}/base-openalea:latest .
-	docker build --no-cache -t ${DOCKER_USER}/base-openalea:latest .
+	sudo docker build --no-cache -t ${DOCKER_USER}/base-openalea:latest . ;\
+	rm ./Dockerfile
 
 .PHONY: notebook-openalea
 notebook-openalea : base-openalea
@@ -57,9 +59,11 @@ plantscan3d-openalea : base-openalea
 
 .PHONY: structureanalysis-openalea
 structureanalysis-openalea : base-openalea
+	ln -s base-openalea/Dockerfile ./Dockerfile; \
 	cd structureanalysis-openalea ; \
 	conda-lock lock --mamba -f environment.yml -p linux-64; \
 	../list_packages.sh | sort > packages.txt; \
-	docker build -t ${DOCKER_USER}/structureanalysis-openalea:latest . ; \
+	sudo docker build -t ${DOCKER_USER}/structureanalysis-openalea:latest . ; \
 	cd .. ; \
-	docker run --rm -w ${TESTDIR} -v ${PWD}:${TESTDIR} ${DOCKER_USER}/structureanalysis-openalea:latest ./run_tests.sh structureanalysis-openalea
+	sudo docker run --rm -w ${TESTDIR} -v ${PWD}:${TESTDIR} ${DOCKER_USER}/structureanalysis-openalea:latest ./run_tests.sh structureanalysis-openalea
+	rm ./Dockerfile
